@@ -19,13 +19,13 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    // console.log(data);
+    
     try {
       const response = await axios.post("/api/users/login", data);
       const responseData = response?.data;
 
       toast.success(responseData?.message);
-      router.push('/')
+      router.back();
     } catch (error: any) {
       console.log("Error while submitting data", error);
       toast.error(error?.response?.data?.message);

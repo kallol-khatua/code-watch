@@ -58,15 +58,17 @@ export async function POST(request: NextRequest) {
             .digest('hex');
 
         if (generated_signature == body.razorpay_signature) {
-            let newPayment = new Order({
+            let newOrder = new Order({
                 productId: body.productId,
                 userId: user._id,
                 amount: Number(body.amount) / 100,
                 razorpay_payment_id: body.razorpay_payment_id,
                 razorpay_order_id: body.razorpay_order_id,
-                status: "captured"
+                paymentStatus: "captured",
+                status: "Order Placed",
+                referenceNo: "NEC" + Date.now(),
             })
-            await newPayment.save();
+            await newOrder.save();
 
             return NextResponse.json(
                 {

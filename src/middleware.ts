@@ -1,12 +1,7 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
- 
-export async function middleware(request: NextRequest) {
-  return NextResponse.redirect(new URL('/', request.url))
-}
- 
-// See "Matching Paths" below to learn more
-export const config = {
-  matcher: '/users/profile',
-  // matcher: '/users/:path*',
+import { NextResponse, NextRequest } from "next/server";
+
+export function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/users/profile')) {
+    // console.log("user profile middleware")
+  }
 }

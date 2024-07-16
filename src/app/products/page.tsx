@@ -3,12 +3,15 @@
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Script from "next/script";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function ProductByIDPage() {
-  const [product, setProduct]: any = useState([]);
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [product, setProduct]: any = useState([]);
   const productId = searchParams.get("productId");
 
   useEffect(() => {
@@ -73,11 +76,14 @@ export default function ProductByIDPage() {
 
               // after successfull payment send to all order page
               if (verifyResponse.status === 200) {
-                // toast.success(verifyResponse.data.message);
-                // navigate(`/advertiser/campaings/${campaignId}`);
+                router.push("/users/profile/orders");
               }
-            } catch (error) {
+            } catch (error: any) {
               console.log(error);
+              if (error?.response?.status === 401) {
+                toast.error("Login first");
+                router.push("/users/login");
+              }
             }
           },
           theme: {
@@ -90,7 +96,7 @@ export default function ProductByIDPage() {
 
         paymentObject.on("payment.failed", async function (response: any) {
           paymentObject.close();
-          console.log(response);
+
           try {
             let failureResponse = {
               razorpay_payment_id: response.error.metadata.payment_id,
@@ -105,19 +111,27 @@ export default function ProductByIDPage() {
             );
 
             // payment failed redirect
-          } catch (error) {
+          } catch (error: any) {
             console.log(error);
+            if (error?.response?.status === 401) {
+              toast.error("Login first");
+              router.push("/users/login");
+            }
           }
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
-      // handle not login 401 error
+      if (error?.response?.status === 401) {
+        toast.error("Login first");
+        router.push("/users/login");
+      }
     }
   };
 
   return (
     <main className="flex-col md:flex-row justify-center flex gap-4 items-start mx-4 py-12">
+      <Toaster />
       <Script
         id="razorpay-checkout-js"
         src="https://checkout.razorpay.com/v1/checkout.js"

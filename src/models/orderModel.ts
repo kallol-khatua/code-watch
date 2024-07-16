@@ -7,6 +7,8 @@ interface OrderInterface extends Document {
     razorpay_payment_id: String,
     razorpay_order_id: String,
     status: String,
+    paymentStatus: String,
+    referenceNo: String,
     createdAt?: Date,
     updatedAt?: Date,
 }
@@ -34,7 +36,15 @@ const orderSchema = new Schema<OrderInterface>({
         type: String,
         required: true,
     },
+    paymentStatus: {
+        type: String,
+        required: true,
+    },
     status: {
+        type: String,
+        required: true,
+    },
+    referenceNo: {
         type: String,
         required: true,
     }

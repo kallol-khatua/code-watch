@@ -4,9 +4,9 @@ import jwt from "jsonwebtoken"
 import User from "@/models/userModel"
 import Order from "@/models/orderModel"
 
-dbConnect();
+dbConnect()
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
     try {
         const token: any = request.cookies.get("token");
 
@@ -50,35 +50,24 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const body = await request.json();
-
-        let newOrder = new Order({
-            productId: body.productId,
-            userId: user._id,
-            amount: Number(body.amount) / 100,
-            razorpay_payment_id: body.razorpay_payment_id,
-            razorpay_order_id: body.razorpay_order_id,
-            paymentStatus: "failed",
-            status: "Payment Failed",
-            referenceNo: "NEC" + Date.now(),
-        })
-        await newOrder.save();
+        let orders = await Order.find({ userId: user._id, paymentStatus: "captured" });
 
         return NextResponse.json(
             {
                 success: true,
-                message: "Payment status saved",
+                message: "Data found",
+                orders
             },
             {
                 status: 200
             }
         )
     } catch (error) {
-        console.log("Error verifying payment success", error);
+        console.log("Error while fetching all orders details", error)
         return NextResponse.json(
             {
                 success: false,
-                message: "Error saving payment failure status"
+                message: "Error while fetching all orders"
             },
             {
                 status: 500
