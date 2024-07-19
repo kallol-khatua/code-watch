@@ -1,10 +1,13 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface ProductInterface extends Document{
+interface ProductInterface extends Document {
     image: string,
     name: string,
     color: string,
-    price: number,
+    originalPrice: Number,
+    offeredPrice: Number,
+    category: String,
+    brand: String,
     createdAt?: Date,
     updatedAt?: Date,
 }
@@ -14,16 +17,29 @@ const productSchema = new Schema<ProductInterface>({
         type: String,
         required: [true, "Please provide an image"],
     },
-    name : {
+    name: {
         type: String,
         required: [true, "Please provide an name"],
+    },
+    originalPrice: {
+        type: Number,
+        required: true
+    },
+    offeredPrice: {
+        type: Number,
+        required: true
     },
     color: {
         type: String,
         required: true,
     },
-    price: {
-        type: Number,
+    category: {
+        type: String,
+        required: true,
+    },
+    brand: {
+        type: String,
+        required: true,
     }
 }, { timestamps: true })
 

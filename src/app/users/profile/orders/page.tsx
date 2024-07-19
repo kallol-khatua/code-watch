@@ -1,11 +1,116 @@
 "use client";
 
 import axios from "axios";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 
-function OrderDetail({ orderDetail }: any): React.JSX.Element {
+function CancelOrder({
+  isOpen,
+  onClose,
+  cancelOrderId,
+  setIsCanceledOrder,
+}: any) {
+  const [formData, setFormData] = useState({
+    reason: "",
+    orderId: "",
+  });
+  const router = useRouter();
+  setIsCanceledOrder(false);
+
+  if (!isOpen) return null;
+
+  const handleOrderCancel = async (e: any) => {
+    e.preventDefault();
+    formData.orderId = cancelOrderId;
+    // console.log(formData);
+    try {
+      const response = await axios.patch(
+        "/api/users/profile/orders/cancelorder",
+        formData
+      );
+      if (response?.status === 200) {
+        setFormData({
+          reason: "",
+          orderId: "",
+        });
+        setIsCanceledOrder(true);
+        toast.success(response.data.message);
+        onClose();
+      }
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        toast.error("Login first");
+        router.push("/users/login");
+      }
+    }
+  };
+
+  const handleClose = () => {
+    setFormData({
+      reason: "",
+      orderId: "",
+    });
+    onClose();
+  };
+
+  return (
+    <div className="fixed min-h-screen pt-20 md:pt-0 overflow-y-scroll inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+      <div className="bg-white mb-5 rounded-lg p-6 min-w-80 md:w-1/3 sm:min-w-96">
+        <div className="flex justify-between items-center border-b pb-2">
+          <h2 className="text-xl font-semibold">Cancel order</h2>
+          <button
+            onClick={handleClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            &times;
+          </button>
+        </div>
+        <div className="mt-4">
+          <form className="max-w-md mx-auto" onSubmit={handleOrderCancel}>
+            <div className="relative z-0 w-full mb-5 group">
+              <input
+                type="text"
+                name="reason"
+                id="reason"
+                value={formData.reason}
+                onChange={(e) =>
+                  setFormData({ ...formData, [e.target.name]: e.target.value })
+                }
+                className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                placeholder="Reason"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="text-white w full bg-blue-600 hover:bg-blue-700 font-medium rounded-lg w-full  px-5 py-2.5 text-center"
+            >
+              Cancel Order
+            </button>
+          </form>
+        </div>
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={handleClose}
+            className="w-full border border-red-400 text-black px-4 py-2 rounded-lg hover:text-white hover:bg-red-600"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrderDetail({
+  orderDetail,
+  setIsCanceledOrder,
+}: any): React.JSX.Element {
+  const [cancelOrderId, setCancelOrderId] = useState("");
+  const [isCancellingOrder, setIsCancellingOrder] = useState(false);
+
   //   order date
   const utcDate = new Date(orderDetail.createdAt);
   const istOffset = 5.5 * 60 * 60 * 1000;
@@ -14,6 +119,22 @@ function OrderDetail({ orderDetail }: any): React.JSX.Element {
   const mm = String(istDate.getUTCMonth() + 1).padStart(2, "0");
   const yyyy = istDate.getUTCFullYear();
   const formattedDate = `${dd}.${mm}.${yyyy}`;
+  const router = useRouter();
+
+  const cancelOrderInitiation = (orderId: any) => {
+    setCancelOrderId(orderId);
+    setIsCancellingOrder(true);
+  };
+
+  const closeCancelOrderInitiation = () => {
+    setCancelOrderId("");
+    setIsCancellingOrder(false);
+  };
+
+  const handleOrderAgain = (productId: any) => {
+    router.push(`/products?productId=${productId}`)
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-y-4 py-6">
       <dl className="w-1/2 sm:w-1/4 lg:w-auto lg:flex-1">
@@ -140,6 +261,7 @@ function OrderDetail({ orderDetail }: any): React.JSX.Element {
           <button
             type="button"
             className="w-full rounded-lg border border-red-700 px-3 py-2 text-center text-sm font-medium text-red-700 hover:bg-red-700 hover:text-white"
+            onClick={() => cancelOrderInitiation(orderDetail._id)}
           >
             Cancel order
           </button>
@@ -148,15 +270,23 @@ function OrderDetail({ orderDetail }: any): React.JSX.Element {
           orderDetail.status === "Cancelled") && (
           <button
             type="button"
-            className="w-full rounded-lg bg-primary-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-primary-800 "
+            className="w-full rounded-lg bg-primary-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-primary-800"
+            onClick={() => handleOrderAgain(orderDetail.productId)}
           >
             Order again
           </button>
         )}
-        <a className="w-full cursor-pointer inline-flex justify-center rounded-lg  border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100">
+        <Link href={`/users/profile/orders/viewdetails?orderId=${orderDetail.referenceNo}`} className="w-full cursor-pointer inline-flex justify-center rounded-lg  border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:outline-none focus:ring-4 focus:ring-gray-100">
           View details
-        </a>
+        </Link>
       </div>
+
+      <CancelOrder
+        isOpen={isCancellingOrder}
+        onClose={closeCancelOrderInitiation}
+        cancelOrderId={cancelOrderId}
+        setIsCanceledOrder={setIsCanceledOrder}
+      />
     </div>
   );
 }
@@ -164,6 +294,7 @@ function OrderDetail({ orderDetail }: any): React.JSX.Element {
 export default function ProfilePage() {
   const router = useRouter();
   const [orders, setOrders]: any = useState([]);
+  const [isCanceledOrder, setIsCanceledOrder] = useState(false);
   useEffect(() => {
     async function getData() {
       try {
@@ -179,7 +310,7 @@ export default function ProfilePage() {
       }
     }
     getData();
-  }, []);
+  }, [isCanceledOrder, router]);
 
   return (
     <div>
@@ -237,7 +368,13 @@ export default function ProfilePage() {
 
             {orders && orders.length > 0
               ? orders.map((order: any, idx: any) => {
-                  return <OrderDetail key={idx} orderDetail={order} />;
+                  return (
+                    <OrderDetail
+                      key={idx}
+                      orderDetail={order}
+                      setIsCanceledOrder={setIsCanceledOrder}
+                    />
+                  );
                 })
               : ""}
           </div>

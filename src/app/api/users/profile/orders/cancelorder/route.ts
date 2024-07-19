@@ -1,49 +1,16 @@
 import dbConnect from "@/lib/dbConnect"
 import { NextRequest, NextResponse } from "next/server"
-import Product from "@/models/productModel"
-import Razorpay from "razorpay";
 import jwt from "jsonwebtoken"
 import User from "@/models/userModel"
+import Order from "@/models/orderModel"
+import CancelOrder from "@/models/cancelOrderModel"
 
-dbConnect();
+dbConnect()
 
-export async function GET(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
     try {
-        const url = new URL(request.url);
-        const productId = url.pathname.split('/').pop()
-
-        const product = await Product.findOne({ _id: productId });
-
-        return NextResponse.json(
-            {
-                success: true,
-                message: "Products found",
-                product,
-            },
-            {
-                status: 200,
-            }
-        )
-    } catch (error) {
-        console.log("Error while fetching products", error);
-        return NextResponse.json(
-            {
-                success: false,
-                message: "Error while fetching products"
-            },
-            {
-                status: 500
-            }
-        )
-    }
-}
-
-export async function POST(request: NextRequest) {
-    try {
-        const url = new URL(request.url);
-        const productId = url.pathname.split('/').pop()
         const token: any = request.cookies.get("token");
-    
+
         if (!token || !token?.value) {
             return NextResponse.json(
                 {
@@ -84,21 +51,32 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        const data = await request.json();
+
+        let newCancelOrder = new CancelOrder({
+            user: user._id,
+            orderId: data.orderId,
+            reason: data.reason,
+        })
+        await newCancelOrder.save();
+
+        await Order.findOneAndUpdate({_id: data.orderId}, {status: "Cancelled"})
+
         return NextResponse.json(
             {
                 success: true,
-                message: "Already logged in",
+                message: "Order cancelled",
             },
             {
                 status: 200
             }
         )
     } catch (error) {
-        console.log("Error creating order", error);
+        console.log("Error while cancelling order", error)
         return NextResponse.json(
             {
                 success: false,
-                message: "Error creating order"
+                message: "Error while cancelling order"
             },
             {
                 status: 500

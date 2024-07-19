@@ -66,7 +66,8 @@ export async function POST(request: NextRequest) {
                 razorpay_order_id: body.razorpay_order_id,
                 paymentStatus: "captured",
                 status: "Order Placed",
-                referenceNo: "NEC" + Date.now(),
+                referenceNo: "CW" + Date.now(),
+                address: body.address,
             })
             await newOrder.save();
 

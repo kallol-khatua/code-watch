@@ -4,7 +4,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Script from "next/script";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function ProductByIDPage() {
@@ -43,82 +42,10 @@ export default function ProductByIDPage() {
     }
     try {
       // creating order from razorpay
-      const response = await axios.post(`/api/getproducts/${productId}`, {
-        amount: product?.offeredPrice,
-      });
+      const response = await axios.post(`/api/getproducts/${productId}`);
 
       if (response.status === 200) {
-        const key = response.data.key;
-        const order = response.data.order;
-
-        const options = {
-          key,
-          amount: order.amount,
-          currency: order.currency,
-          name: "Next JS E-Commerce by Kallol",
-          description: "Next JS E-Commerce by Kallol",
-          order_id: order.id,
-          handler: async function (response: any) {
-            let paymentResponse = {
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              amount: order.amount,
-              order_id: order.id,
-              productId,
-            };
-
-            try {
-              const verifyResponse = await axios.post(
-                `/api/getproducts/verifypaymentsuccess`,
-                paymentResponse
-              );
-
-              // after successfull payment send to all order page
-              if (verifyResponse.status === 200) {
-                router.push("/users/profile/orders");
-              }
-            } catch (error: any) {
-              console.log(error);
-              if (error?.response?.status === 401) {
-                toast.error("Login first");
-                router.push("/users/login");
-              }
-            }
-          },
-          theme: {
-            color: "#3399cc",
-          },
-        };
-
-        const paymentObject = new window.Razorpay(options);
-        paymentObject.open();
-
-        paymentObject.on("payment.failed", async function (response: any) {
-          paymentObject.close();
-
-          try {
-            let failureResponse = {
-              razorpay_payment_id: response.error.metadata.payment_id,
-              razorpay_order_id: response.error.metadata.order_id,
-              amount: order.amount,
-              productId,
-            };
-
-            const verifyResponse = await axios.post(
-              `/api/getproducts/verifypaymentfailure`,
-              failureResponse
-            );
-
-            // payment failed redirect
-          } catch (error: any) {
-            console.log(error);
-            if (error?.response?.status === 401) {
-              toast.error("Login first");
-              router.push("/users/login");
-            }
-          }
-        });
+        router.push(`/products/buynow?productId=${product._id}`)
       }
     } catch (error: any) {
       console.log(error);
@@ -130,66 +57,68 @@ export default function ProductByIDPage() {
   };
 
   return (
-    <main className="flex-col md:flex-row justify-center flex gap-4 items-start mx-4 py-12">
-      <Toaster />
-      <Script
+    <>
+      {/* <Script
         id="razorpay-checkout-js"
         src="https://checkout.razorpay.com/v1/checkout.js"
-      />
-      {product && (
-        <div className="flex bg-white rounded-lg shadow flex-col md:flex-row md:max-w-screen-lg">
-          <div className="w-full md:w-48 md:min-w-40">
-            <img
-              src={product.image}
-              alt="product image"
-              className="w-72 object- w-full  md:h-full"
-            />
-          </div>
-          <form className="flex-auto p-6 bg-white">
-            <div>
-              <h1 className="flex-auto text-xl font-semibold text-black">
-                {product.name}
-              </h1>
+      /> */}
+      <main className="flex-col md:flex-row justify-center flex gap-4 items-start mx-4 py-12">
+        <Toaster />
+        {product && (
+          <div className="flex bg-white rounded-lg shadow flex-col md:flex-row md:max-w-screen-lg">
+            <div className="w-full md:w-48 md:min-w-40">
+              <img
+                src={product.image}
+                alt="product image"
+                className="w-72 object- w-full  md:h-full"
+              />
+            </div>
+            <form className="flex-auto p-6 bg-white">
               <div>
-                <p>Colour: {product.color}</p>
-              </div>
-              <div className="flex items-center">
-                <p className="text-lg font-semibold text-black cursor-auto">
-                  {product?.offeredPrice?.toLocaleString("en-IN", {
-                    style: "currency",
-                    currency: "INR",
-                  })}
-                </p>
-                <del>
-                  <p className="text-sm text-gray-600 cursor-auto ml-2">
-                    {product?.originalPrice?.toLocaleString("en-IN", {
+                <h1 className="flex-auto text-xl font-semibold text-black">
+                  {product.name}
+                </h1>
+                <div>
+                  <p>Colour: {product.color}</p>
+                </div>
+                <div className="flex items-center">
+                  <p className="text-lg font-semibold text-black cursor-auto">
+                    {product?.offeredPrice?.toLocaleString("en-IN", {
                       style: "currency",
                       currency: "INR",
                     })}
                   </p>
-                </del>
+                  <del>
+                    <p className="text-sm text-gray-600 cursor-auto ml-2">
+                      {product?.originalPrice?.toLocaleString("en-IN", {
+                        style: "currency",
+                        currency: "INR",
+                      })}
+                    </p>
+                  </del>
+                </div>
               </div>
-            </div>
 
-            <div className="mt-2 text-sm font-medium">
-              <button
-                onClick={() => handleAddToBag(product?._id)}
-                type="button"
-                className="py-2 px-4 bg-amber-400 hover:bg-amber-500 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md rounded-lg "
-              >
-                Add to bag
-              </button>
-              <button
-                type="button"
-                onClick={handleBuyNow}
-                className="py-2 mt-2 px-4 bg-orange-600 hover:bg-orange-700 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md rounded-lg "
-              >
-                Buy now
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </main>
+              <div className="mt-2 text-sm font-medium">
+                <button
+                  onClick={() => handleAddToBag(product?._id)}
+                  type="button"
+                  className="py-2 px-4 bg-amber-400 hover:bg-amber-500 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md rounded-lg "
+                >
+                  Add to bag
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBuyNow}
+                  className="py-2 mt-2 px-4 bg-orange-600 hover:bg-orange-700 text-white w-full transition ease-in duration-200 text-center text-base font-semibold shadow-md rounded-lg "
+                >
+                  Buy now
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </main>
+    </>
   );
 }

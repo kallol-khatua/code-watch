@@ -15,19 +15,19 @@ export default function Navbar() {
           className="flex items-center space-x-3 rtl:space-x-reverse"
         >
           <img
-            src="https://flowbite.com/docs/images/logo.svg"
+            src="/logo-no-background.svg"
             className="h-8"
-            alt="Flowbite Logo"
+            alt="Code Watch Logo"
           />
-          <span className="self-center text-2xl font-semibold whitespace-nowrap ">
-            Flowbite
-          </span>
+          {/* <span className="self-center text-2xl font-semibold whitespace-nowrap ">
+            Code Watch
+          </span> */}
         </Link>
-        <div className="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+        <div className="flex items-center justify-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
           <Link href="/users/profile">
             <button
               type="button"
-              className="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300 "
+              className="flex items-center justify-center text-sm bg-gray-800 rounded-full md:me-0 "
               id="user-menu-button"
               aria-expanded="false"
               data-dropdown-toggle="user-dropdown"
@@ -36,7 +36,7 @@ export default function Navbar() {
               <span className="sr-only">Open user menu</span>
               <img
                 className="w-8 h-8 rounded-full"
-                src="https://flowbite.com/docs/images/logo.svg"
+                src="https://img.freepik.com/free-vector/colorful-letter-gradient-logo-design_474888-2309.jpg"
                 alt="user photo"
               />
             </button>

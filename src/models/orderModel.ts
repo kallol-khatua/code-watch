@@ -9,6 +9,7 @@ interface OrderInterface extends Document {
     status: String,
     paymentStatus: String,
     referenceNo: String,
+    address?: Schema.Types.ObjectId,
     createdAt?: Date,
     updatedAt?: Date,
 }
@@ -47,6 +48,10 @@ const orderSchema = new Schema<OrderInterface>({
     referenceNo: {
         type: String,
         required: true,
+    },
+    address: {
+        type: Schema.Types.ObjectId,
+        ref: "Address"
     }
 }, { timestamps: true })
 

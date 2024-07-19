@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        let orders = await Order.find({ userId: user._id, paymentStatus: "captured" });
+        let orders = await Order.find({ userId: user._id, paymentStatus: "captured" }).sort({ _id: -1 });
 
         return NextResponse.json(
             {

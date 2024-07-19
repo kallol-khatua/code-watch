@@ -1,10 +1,32 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { IoMdMore } from "react-icons/io";
+
+function AddressDetail({ address, handleAddressesChange }: any) {
+  return (
+    <div className="border border-gray px-3 py-3 flex items-center">
+      <div className="pr-2">
+        <input
+          name="address"
+          type="radio"
+          onClick={() => handleAddressesChange(address._id)}
+        />
+      </div>
+      <div>
+        <div className="flex justify-between">
+          <div>{address.name}</div>
+        </div>
+        <div>
+          {address.area}, {address.house}, {address.landmark}, {address.city},{" "}
+          {address.state}, {address.pincode}
+        </div>
+        <div>{address.phone_number}</div>
+      </div>
+    </div>
+  );
+}
 
 function AddNewAddress({ isOpen, onClose }: any) {
   const [formData, setFormData] = useState({
@@ -216,74 +238,64 @@ function AddNewAddress({ isOpen, onClose }: any) {
   );
 }
 
-function AddressDetail({ address }: any) {
-  return (
-    <div className="border rounded-lg shadow-md hover:shadow-xl border-gray px-3 py-3 mb-3">
-      <div className="flex justify-between">
-        <div>{address.name}</div> <IoMdMore />
-      </div>
-      <div>
-        {address.area}, {address.house}, {address.landmark}, {address.city},{" "}
-        {address.state}, {address.pincode}
-      </div>
-      <div>{address.phone_number}</div>
-    </div>
-  );
-}
-
-export default function Addresses() {
+export default function BuyNowAddresses({
+  handleAddressesChange,
+}: any): React.JSX.Element {
+  const [addresses, setAddresses]: any = useState([]);
   const [addNewAddress, setAddNewAddress] = useState(false);
-  const [addresses, setAddresses] = useState([]);
-  const router = useRouter();
 
   const handleAddNewAddress = () => setAddNewAddress(true);
   const closeAddNewAddress = () => setAddNewAddress(false);
 
   useEffect(() => {
-    const getAddresses = async () => {
+    async function getData() {
       try {
-        const response = await axios.get("/api/users/profile/addresses");
-        if (response?.status === 200) {
-          setAddresses(response.data.addresses);
-        }
-      } catch (error: any) {
-        if (error?.response?.status === 401) {
-          toast.error("Login first");
-          router.push("/users/login");
-        }
+        const response = await axios.get(`/api/getproducts/createorder`);
+        setAddresses(response.data.addresses);
+      } catch (error) {
+        console.log("Error while fetching addresses");
       }
-    };
-    getAddresses();
+    }
+    getData();
   }, [addNewAddress]);
 
   return (
-    <section className="bg-white py-8 antialiased md:py-16">
+    <section className="bg-white antialiased">
       <Toaster />
       <div className="mx-auto max-w-screen-xl px-4 2xl:px-0">
         <div className="mx-auto max-w-5xl">
-          <div className="gap-4 mb-3 sm:flex sm:items-center sm:justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl">
-              Manage addresses
-            </h2>
-            <button
-              type="button"
-              className="rounded-lg border border-primary-200 px-3 py-2 text-center text-sm font-medium text-gray-900 hover:bg-primary-50"
-              onClick={handleAddNewAddress}
-            >
-              Add a new address
-            </button>
+          <div>
+            <div className="gap-4 mb-3 sm:flex sm:items-center sm:justify-between">
+              <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl">
+                Delivery Address
+              </h2>
+              <button
+                type="button"
+                className="rounded-lg border border-primary-200 px-3 py-2 text-center text-sm font-medium text-gray-900 hover:bg-primary-50"
+                onClick={handleAddNewAddress}
+              >
+                Add a new address
+              </button>
+            </div>
+            <AddNewAddress
+              isOpen={addNewAddress}
+              onClose={closeAddNewAddress}
+            />
+
+            <div>
+              {addresses &&
+                addresses.length > 0 &&
+                addresses.map((address: any, idx: any) => {
+                  return (
+                    <AddressDetail
+                      key={idx}
+                      address={address}
+                      handleAddressesChange={handleAddressesChange}
+                    />
+                  );
+                })}
+            </div>
           </div>
-
-          <AddNewAddress isOpen={addNewAddress} onClose={closeAddNewAddress} />
-
-          {/* all saved addresses */}
-          {addresses && addresses.length > 0 ? (
-            addresses.map((address: any, idx) => {
-              return <AddressDetail key={idx} address={address} />;
-            })
-          ) : (
-            <div className="text-center mt-20">No address found</div>
-          )}
         </div>
       </div>
     </section>

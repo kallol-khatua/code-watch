@@ -17,6 +17,7 @@ interface AddressInterface extends Document {
 const addressSchema = new Schema<AddressInterface>({
     user: {
         type: Schema.Types.ObjectId,
+        ref: "User",
         required: true,
     },
     name: {
